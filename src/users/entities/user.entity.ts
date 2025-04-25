@@ -13,8 +13,8 @@ export class User {
   @Column({ unique: true })
   email: string;
 
-  @Column()
-  @Exclude() // Exclude password from response objects
+  @Column({ length: 255 })
+  @Exclude()
   password: string;
 
   @Column({
