@@ -36,13 +36,16 @@
     "bcrypt": "^5.1.1",
     "bcryptjs": "^3.0.2",
     "class-transformer": "^0.5.1",
-    "class-validator": "^0.14.1",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",
+    "@nestjs/platform-socket.io": "^11.1.0",
+    "@nestjs/websockets": "^11.1.0",
+    "class-validator": "^0.14.1",
     "pg": "^8.15.5",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
+    "socket.io-client": "^4.8.1",
     "typeorm": "^0.3.22"
   },
   "devDependencies": {
