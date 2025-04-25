@@ -1,10 +1,15 @@
-import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { User } from './entities/user.entity';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { CreateUserDto } from './entities/dto/create-user.dto';
+import { UpdateUserDto } from './entities/dto/update-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -18,8 +23,8 @@ export class UsersService {
     const existingUser = await this.usersRepository.findOne({
       where: [
         { username: createUserDto.username },
-        { email: createUserDto.email }
-      ]
+        { email: createUserDto.email },
+      ],
     });
 
     if (existingUser) {
@@ -32,14 +37,11 @@ export class UsersService {
     }
 
     // Hash the password
-    const salt = await bcrypt.genSalt();
-    const hashedPassword = await bcrypt.hash(createUserDto.password, salt);
+    // const salt = await bcrypt.genSalt();
+    // const hashedPassword = await bcrypt.hash(createUserDto.password, salt);
 
     // Create new user
-    const newUser = this.usersRepository.create({
-      ...createUserDto,
-      password: hashedPassword,
-    });
+    const newUser = this.usersRepository.create(createUserDto);
 
     return this.usersRepository.save(newUser);
   }
@@ -64,6 +66,11 @@ export class UsersService {
     return user;
   }
 
+  async findUserByEmail(email: string): Promise<User | null> {
+    const user = await this.usersRepository.findOne({ where: { email } });
+    return user ?? null;
+  }
+
   async findByEmail(email: string): Promise<User> {
     const user = await this.usersRepository.findOne({ where: { email } });
     if (!user) {
@@ -77,8 +84,8 @@ export class UsersService {
 
     // Check if username update doesn't conflict
     if (updateUserDto.username && updateUserDto.username !== user.username) {
-      const usernameExists = await this.usersRepository.findOne({ 
-        where: { username: updateUserDto.username } 
+      const usernameExists = await this.usersRepository.findOne({
+        where: { username: updateUserDto.username },
       });
       if (usernameExists) {
         throw new ConflictException('Username already exists');
@@ -87,8 +94,8 @@ export class UsersService {
 
     // Check if email update doesn't conflict
     if (updateUserDto.email && updateUserDto.email !== user.email) {
-      const emailExists = await this.usersRepository.findOne({ 
-        where: { email: updateUserDto.email } 
+      const emailExists = await this.usersRepository.findOne({
+        where: { email: updateUserDto.email },
       });
       if (emailExists) {
         throw new ConflictException('Email already exists');
@@ -113,7 +120,10 @@ export class UsersService {
     }
   }
 
-  async validatePassword(plainPassword: string, hashedPassword: string): Promise<boolean> {
+  async validatePassword(
+    plainPassword: string,
+    hashedPassword: string,
+  ): Promise<boolean> {
     return bcrypt.compare(plainPassword, hashedPassword);
   }
 }

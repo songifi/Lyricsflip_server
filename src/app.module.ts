@@ -3,6 +3,10 @@ import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DatabaseModule } from './core/database/database.module';
+import { AuthModule } from './auth/auth.module';
+import { AuthController } from './auth/auth.controller';
+import { UsersModule } from './users/users.module';
+import { UsersController } from './users/users.controller';
 import { GameModule } from './game/game.module';
 
 @Module({
@@ -12,9 +16,11 @@ import { GameModule } from './game/game.module';
       envFilePath: '.env',
     }),
     DatabaseModule,
+    AuthModule,
+    UsersModule,
     GameModule,
   ],
-  controllers: [AppController],
+  controllers: [AppController, UsersController, AuthController],
   providers: [AppService],
 })
 export class AppModule {}
