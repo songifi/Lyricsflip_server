@@ -55,11 +55,14 @@ export class AuthService {
       // await bcrypt.hash(body.password, this.BCRYPT_SALT_ROUNDS);
       return null;
     }
-    console.log(user)
+    console.log(user);
 
-    const isPasswordValid = await this.comparePasswords(body.password, user.password);
+    const isPasswordValid = await this.comparePasswords(
+      body.password,
+      user.password,
+    );
 
-    console.log(isPasswordValid)
+    console.log(isPasswordValid);
 
     if (!isPasswordValid) {
       return null;
@@ -87,11 +90,16 @@ export class AuthService {
     const payload: JwtPayload = {
       sub: user.id,
       email: user.email,
-      roles: user.role,
+      role: user.role,
     };
 
     const [accessToken, refreshToken] = await Promise.all([
-      this.jwtService.signAsync(payload),
+      this.jwtService.signAsync(payload, {
+        secret: process.env.JWT_SECRET,
+        expiresIn: process.env.JWT_EXPIRES_IN,
+        issuer: process.env.JWT_ISSUER,
+        audience: process.env.JWT_AUDIENCE,
+      }),
       this.jwtService.signAsync(
         { sub: payload.sub },
         {

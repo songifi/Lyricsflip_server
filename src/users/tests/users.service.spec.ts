@@ -86,7 +86,9 @@ describe('UsersService', () => {
 
       jest.spyOn(repository, 'findOne').mockResolvedValue(mockUser as User);
 
-      await expect(service.create(createUserDto)).rejects.toThrow(ConflictException);
+      await expect(service.create(createUserDto)).rejects.toThrow(
+        ConflictException,
+      );
     });
   });
 
@@ -107,18 +109,21 @@ describe('UsersService', () => {
 
     it('should throw an error if user is not found', async () => {
       jest.spyOn(repository, 'findOne').mockResolvedValue(null);
-      await expect(service.findOne('wrong-id')).rejects.toThrow(NotFoundException);
+      await expect(service.findOne('wrong-id')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
   describe('update', () => {
     it('should update and return a user', async () => {
       const updateUserDto = { username: 'updatedusername' };
-      
-      jest.spyOn(repository, 'findOne')
+
+      jest
+        .spyOn(repository, 'findOne')
         .mockResolvedValueOnce(mockUser as User) // For findOne
         .mockResolvedValueOnce(null); // For username check
-      
+
       jest.spyOn(repository, 'save').mockResolvedValue({
         ...mockUser,
         username: 'updatedusername',
@@ -131,15 +136,20 @@ describe('UsersService', () => {
 
   describe('remove', () => {
     it('should delete a user', async () => {
-      jest.spyOn(repository, 'delete').mockResolvedValue({ affected: 1, raw: [] });
+      jest
+        .spyOn(repository, 'delete')
+        .mockResolvedValue({ affected: 1, raw: [] });
       await service.remove('test-id');
       expect(repository.delete).toHaveBeenCalledWith('test-id');
     });
 
     it('should throw an error if user to delete is not found', async () => {
-      jest.spyOn(repository, 'delete').mockResolvedValue({ affected: 0, raw: [] });
-      await expect(service.remove('wrong-id')).rejects.toThrow(NotFoundException);
+      jest
+        .spyOn(repository, 'delete')
+        .mockResolvedValue({ affected: 0, raw: [] });
+      await expect(service.remove('wrong-id')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 });
-
