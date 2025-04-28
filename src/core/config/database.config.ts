@@ -6,4 +6,4 @@ export default registerAs('database', () => ({
   username: process.env.DATABASE_USER || 'postgres',
   password: process.env.DATABASE_PASSWORD || 'postgres',
   database: process.env.DATABASE_NAME || 'lyricsflip',
-})); 
+}));

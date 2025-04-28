@@ -1,5 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsString, MinLength, MaxLength, Matches, IsOptional } from 'class-validator';
+import {
+  IsEmail,
+  IsString,
+  MinLength,
+  MaxLength,
+  Matches,
+  IsOptional,
+} from 'class-validator';
 import { Role } from '../../users/enums/role.enum';
 
 export class RegisterDto {
@@ -24,13 +31,15 @@ export class RegisterDto {
 
   @ApiProperty({
     example: 'Password123!',
-    description: 'Password (8-32 characters, at least 1 uppercase, 1 lowercase, 1 number and 1 special character)',
+    description:
+      'Password (8-32 characters, at least 1 uppercase, 1 lowercase, 1 number and 1 special character)',
   })
   @IsString()
   @MinLength(8)
   @MaxLength(32)
   @Matches(/(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])/, {
-    message: 'Password too weak - must include upper, lower, number and special char',
+    message:
+      'Password too weak - must include upper, lower, number and special char',
   })
   password: string;
 
