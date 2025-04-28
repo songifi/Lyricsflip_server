@@ -12,7 +12,6 @@ yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
 
-package-lock.json
 pnpm-lock.yaml
 
 # OS
