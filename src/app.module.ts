@@ -12,6 +12,7 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { AdminModule } from './admin/admin.module';
 import { AnalyticsModule } from './analytics/analytics.module';
+import { LyricSnippetModule } from './lyric-snippet/lyric-snippet.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { AnalyticsModule } from './analytics/analytics.module';
     EventEmitterModule.forRoot(),
     AdminModule,
     AnalyticsModule,
+    LyricSnippetModule,
   ],
   controllers: [AppController, UsersController, AuthController],
   providers: [AppService],
