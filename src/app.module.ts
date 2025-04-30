@@ -14,6 +14,7 @@ import { SearchModule } from './search/search.module';
 import { AdminModule } from './admin/admin.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { LyricSnippetModule } from './lyric-snippet/lyric-snippet.module';
+import { GameModeModule } from './game-mode/game-mode.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { LyricSnippetModule } from './lyric-snippet/lyric-snippet.module';
     AuthModule,
     UsersModule,
     GameModule,
+    GameModeModule,
     NotificationsModule,
     EventEmitterModule.forRoot(),
     AdminModule,

@@ -26,7 +26,7 @@ export class MatchmakingService {
     preferences: any,
   ): Promise<MatchmakingResult> {
     // Check if player is already in queue
-    const existingRequest = this.queue.find(req => req.playerId === playerId);
+    const existingRequest = this.queue.find((req) => req.playerId === playerId);
     if (existingRequest) {
       return {
         success: false,
@@ -62,13 +62,13 @@ export class MatchmakingService {
 
   async cancelMatchmaking(playerId: string): Promise<boolean> {
     const initialLength = this.queue.length;
-    this.queue = this.queue.filter(req => req.playerId !== playerId);
-    
+    this.queue = this.queue.filter((req) => req.playerId !== playerId);
+
     const removed = initialLength > this.queue.length;
     if (removed) {
       this.logger.log(`Player ${playerId} removed from matchmaking queue`);
     }
-    
+
     return removed;
   }
 
@@ -76,10 +76,18 @@ export class MatchmakingService {
     return {
       queueLength: this.queue.length,
       queueBySkillLevel: {
-        BEGINNER: this.queue.filter(p => p.skillLevel === PlayerSkillLevel.BEGINNER).length,
-        INTERMEDIATE: this.queue.filter(p => p.skillLevel === PlayerSkillLevel.INTERMEDIATE).length,
-        ADVANCED: this.queue.filter(p => p.skillLevel === PlayerSkillLevel.ADVANCED).length,
-        EXPERT: this.queue.filter(p => p.skillLevel === PlayerSkillLevel.EXPERT).length,
+        BEGINNER: this.queue.filter(
+          (p) => p.skillLevel === PlayerSkillLevel.BEGINNER,
+        ).length,
+        INTERMEDIATE: this.queue.filter(
+          (p) => p.skillLevel === PlayerSkillLevel.INTERMEDIATE,
+        ).length,
+        ADVANCED: this.queue.filter(
+          (p) => p.skillLevel === PlayerSkillLevel.ADVANCED,
+        ).length,
+        EXPERT: this.queue.filter(
+          (p) => p.skillLevel === PlayerSkillLevel.EXPERT,
+        ).length,
       },
       averageWaitTime: this.calculateAverageWaitTime(),
     };
@@ -87,25 +95,29 @@ export class MatchmakingService {
 
   private calculateAverageWaitTime(): number {
     if (this.queue.length === 0) return 0;
-    
+
     const now = new Date();
     const totalWaitTime = this.queue.reduce((sum, req) => {
       return sum + (now.getTime() - req.requestedAt.getTime()) / 1000;
     }, 0);
-    
+
     return Math.round(totalWaitTime / this.queue.length);
   }
 
   private estimateWaitTime(request: PlayerMatchRequest): number {
     // Count players with similar skill level
     const similarSkillPlayers = this.queue.filter(
-      player => Math.abs(this.getSkillValue(player.skillLevel) - this.getSkillValue(request.skillLevel)) <= this.MAX_SKILL_DIFFERENCE
+      (player) =>
+        Math.abs(
+          this.getSkillValue(player.skillLevel) -
+            this.getSkillValue(request.skillLevel),
+        ) <= this.MAX_SKILL_DIFFERENCE,
     ).length;
 
     // Basic wait time calculation: more players with similar skill = less wait time
     const baseWaitTime = 60; // Base wait time in seconds
     const waitTimeReduction = Math.min(45, similarSkillPlayers * 15); // Reduce wait time based on queue size
-    
+
     return Math.max(15, baseWaitTime - waitTimeReduction);
   }
 
@@ -122,8 +134,10 @@ export class MatchmakingService {
   @Cron(CronExpression.EVERY_5_SECONDS)
   async processMatchmakingQueue() {
     if (this.queue.length < 2) return; // Need at least 2 players to match
-    
-    this.logger.debug(`Processing matchmaking queue with ${this.queue.length} players`);
+
+    this.logger.debug(
+      `Processing matchmaking queue with ${this.queue.length} players`,
+    );
 
     // Process friend groups first
     const friendGroups = this.findFriendGroups();
@@ -133,98 +147,31 @@ export class MatchmakingService {
 
     // Process remaining players by skill level
     const remainingPlayers = [...this.queue];
-    
+
     // Sort by wait time (oldest first)
-    remainingPlayers.sort((a, b) => a.requestedAt.getTime() - b.requestedAt.getTime());
-    
+    remainingPlayers.sort(
+      (a, b) => a.requestedAt.getTime() - b.requestedAt.getTime(),
+    );
+
     for (const player of remainingPlayers) {
       // Skip if player was already matched in a friend group
-      if (!this.queue.some(p => p.playerId === player.playerId)) continue;
-      
+      if (!this.queue.some((p) => p.playerId === player.playerId)) continue;
+
       await this.findMatch(player);
     }
-    
+
     // Process timeouts - remove players who waited too long and create sessions with fewer players
     await this.processTimeouts();
   }
 
   private async processTimeouts() {
     const now = new Date();
-    const timeoutPlayers = this.queue.filter(player => {
+    const timeoutPlayers = this.queue.filter((player) => {
       const maxWaitTime = player.preferences.maxWaitTimeSeconds || 300; // Default 5 minutes
       const waitTime = (now.getTime() - player.requestedAt.getTime()) / 1000;
       return waitTime >= maxWaitTime;
     });
 
-    if (timeoutPlayers.length >= 2) {
-      const playerIds = timeoutPlayers.map(p => p.playerId);
-      this.logger.log(`Creating timeout session for players: ${playerIds.join(', ')}`);
-      
-      // Get the most common preferences from the group
-      const mostCommonCategory = this.getMostCommonPreference(
-        timeoutPlayers.flatMap(p => p.preferences.categories || [Object.values(GameCategory)[0]])
-      );
-      
-      const mostCommonDifficulty = this.getMostCommonPreference(
-        timeoutPlayers.map(p => p.preferences.difficulty || GameDifficulty.MEDIUM)
-      );
-      
-      // Create session with whatever players we have
-      const session = await service.getSession(sessionId);
-      expect(session).toBeDefined();
-      expect(session.id).toBe(sessionId);
-      expect(session.players).toEqual(playerIds);
-    });
-
-    it('should throw error for non-existent session', async () => {
-      await expect(service.getSession('non-existent-id')).rejects.toThrow();
-    });
-  });
-
-  describe('updateSessionStatus', () => {
-    it('should update session status', async () => {
-      const playerIds = ['player1', 'player2', 'player3', 'player4'];
-      const sessionId = await service.createSession(
-        playerIds, 
-        GameCategory.ACTION, 
-        GameDifficulty.MEDIUM
-      );
-
-      const updatedSession = await service.updateSessionStatus(
-        sessionId, 
-        GameSessionStatus.ACTIVE
-      );
-
-      expect(updatedSession.status).toBe(GameSessionStatus.ACTIVE);
-    });
-  });
-
-  describe('getSessionsByPlayer', () => {
-    it('should retrieve all sessions for a player', async () => {
-      // Create two sessions with the same player
-      const playerIds1 = ['player1', 'player2', 'player3', 'player4'];
-      const sessionId1 = await service.createSession(
-        playerIds1, 
-        GameCategory.ACTION, 
-        GameDifficulty.MEDIUM
-      );
-
-      const playerIds2 = ['player1', 'player5', 'player6', 'player7'];
-      const sessionId2 = await service.createSession(
-        playerIds2, 
-        GameCategory.STRATEGY, 
-        GameDifficulty.HARD
-      );
-
-      const sessions = await service.getSessionsByPlayer('player1');
-      expect(sessions).toHaveLength(2);
-      expect(sessions.map(s => s.id)).toContain(sessionId1);
-      expect(sessions.map(s => s.id)).toContain(sessionId2);
-    });
-
-    it('should return empty array for player with no sessions', async () => {
-      const sessions = await service.getSessionsByPlayer('player-no-sessions');
-      expect(sessions).toHaveLength(0);
-    });
-  });
-});
+    return timeoutPlayers;
+  }
+}
