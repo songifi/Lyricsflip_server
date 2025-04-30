@@ -1,7 +1,8 @@
 // src/game-session/entities/game-session.entity.ts
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, ManyToMany, JoinTable, OneToMany } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, ManyToOne, ManyToMany, JoinTable, OneToMany } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { Round } from '../../rounds/entities/round.entity';
+import { GameMode } from 'src/game-mode/entities/game-mode.entity';
 
 export enum GameSessionStatus {
   PENDING = 'pending',
@@ -54,4 +55,10 @@ export class GameSession {
 
   @Column({ nullable: true })
   inviteCode: string;
+
+  @ManyToOne(() => GameMode, { eager: true })
+  gameMode: GameMode; 
+
 }
+
+
