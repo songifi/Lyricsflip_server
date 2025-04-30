@@ -10,7 +10,6 @@ import { UsersController } from './users/users.controller';
 import { GameModule } from './game/game.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
-import { SearchModule } from './search/search.module';
 import { AdminModule } from './admin/admin.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { LyricSnippetModule } from './lyric-snippet/lyric-snippet.module';
@@ -32,7 +31,6 @@ import { GameModeModule } from './game-mode/game-mode.module';
     AdminModule,
     AnalyticsModule,
     LyricSnippetModule,
-    SearchModule,
   ],
   controllers: [AppController, UsersController, AuthController],
   providers: [AppService],
