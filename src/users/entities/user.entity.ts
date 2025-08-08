@@ -41,4 +41,7 @@ export class User {
 
   @Column({ nullable: true })
   lastLoginAt?: Date;
+
+  @Column({ type: 'varchar', length: 20, default: 'user' })
+  role: string; // 'user' or 'admin'
 }
