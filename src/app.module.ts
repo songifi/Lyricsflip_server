@@ -69,6 +69,10 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
           entities: [__dirname + '/**/*.entity{.ts,.js}'],
           synchronize: false, // Always false in production
 
+          // --- Query Performance Logging ---
+          logging: ['query', 'error'], // Log all queries and errors
+          maxQueryExecutionTime: 250, // Log queries that take longer than 250ms
+
           // --- Connection Pooling Configuration ---
           extra: {
             poolSize: 10,
