@@ -24,6 +24,13 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
         database: configService.get<string>('DB_NAME'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
         synchronize: false, // Always false in production
+        // --- Connection Pooling Configuration ---
+        // TypeORM's pg driver handles pooling automatically.
+        // The 'extra' property allows passing driver-specific options.
+        // The default pool size is 10.
+        extra: {
+          poolSize: 10,
+        },
       }),
     }),
   ],
