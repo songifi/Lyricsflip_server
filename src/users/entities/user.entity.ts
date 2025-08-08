@@ -4,6 +4,7 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  Index,
 } from 'typeorm';
 
 @Entity('users') // This decorator marks the class as a TypeORM entity, mapping it to the 'users' table.
@@ -11,6 +12,7 @@ export class User {
   @PrimaryGeneratedColumn('uuid') // Creates a primary key column that automatically generates a UUID.
   id: string;
 
+  @Index()
   @Column({ type: 'varchar', length: 255, unique: true })
   email: string;
 
