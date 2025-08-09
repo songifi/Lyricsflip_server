@@ -3,11 +3,13 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { CacheModule } from '@nestjs/cache-manager';
 import { UsersModule } from './users/users.module';
 import { LyricsModule } from './lyrics/lyrics.module';
 import { AuthModule } from './auth/auth.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { RolesGuard } from './auth/guards/roles.guard';
+import { cacheConfig } from './config/cache.config';
 
 @Module({
   imports: [
@@ -16,7 +18,13 @@ import { RolesGuard } from './auth/guards/roles.guard';
       isGlobal: true, // Makes ConfigModule available globally
       envFilePath: '.env',
     }),
-    // 2. Configure TypeORM using the loaded environment variables
+    // 2. Configure caching globally
+    CacheModule.register({
+      isGlobal: true,
+      ttl: cacheConfig.lyricsTTL,
+      max: cacheConfig.maxItems,
+    }),
+    // 3. Configure TypeORM using the loaded environment variables
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -72,11 +80,13 @@ import { RolesGuard } from './auth/guards/roles.guard';
           },
 
           entities: [__dirname + '/**/*.entity{.ts,.js}'],
-          synchronize: false, // Always false in production
+          synchronize: false, 
 
           // --- Query Performance Logging ---
-          logging: ['query', 'error'], // Log all queries and errors
-          maxQueryExecutionTime: 250, // Log queries that take longer than 250ms
+          // Log all queries and errors
+          logging: ['query', 'error'], 
+           // Log queries that take longer than 250ms
+          maxQueryExecutionTime: 250,
 
           // --- Connection Pooling Configuration ---
           extra: {
