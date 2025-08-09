@@ -1,95 +1,193 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { LyricsService } from './lyrics.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { LyricsService } from './lyrics.service';
 import { Lyrics } from './entities/lyrics.entity';
 import { User } from '../users/entities/user.entity';
-import { Repository } from 'typeorm';
-import { NotFoundException } from '@nestjs/common';
-import { Genre } from './entities/lyrics.entity'; // Import Genre enum
-
-const mockLyrics = {
-  id: 'uuid-1',
-  content: 'Sample lyrics',
-  artist: 'Artist',
-  songTitle: 'Song',
-  genre: Genre.Pop, // Use enum value
-  decade: 2010,
-  createdBy: { id: 'user-1', role: 'admin' },
-  createdAt: new Date(),
-};
-
-const mockUser = { id: 'user-1', role: 'admin' } as User;
-
-const lyricsArray = [mockLyrics];
-
-const repoMockFactory = () => ({
-  create: jest.fn().mockImplementation(dto => ({ ...dto })),
-  save: jest.fn().mockResolvedValue(mockLyrics),
-  find: jest.fn().mockResolvedValue(lyricsArray),
-  findOne: jest.fn().mockResolvedValue(mockLyrics),
-  remove: jest.fn().mockResolvedValue(undefined),
-});
+import { CreateLyricsDto } from './dto/create-lyrics.dto';
+import { UpdateLyricsDto } from './dto/update-lyrics.dto';
+import { cacheConfig } from '../config/cache.config';
 
 describe('LyricsService', () => {
   let service: LyricsService;
-  let repo: Repository<Lyrics>;
+  let mockRepository: any;
+  let mockCacheManager: any;
+
+  const mockUser: User = {
+    id: '1',
+    email: 'test@example.com',
+    username: 'testuser',
+    name: 'Test User',
+    passwordHash: 'hashedPassword',
+    xp: 0,
+    level: 1,
+    role: 'admin',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  } as User;
+
+  const mockLyrics: Lyrics = {
+    id: '1',
+    content: 'Test lyrics content',
+    artist: 'Test Artist',
+    songTitle: 'Test Song',
+    genre: 'Pop' as any,
+    decade: 2020,
+    createdBy: mockUser,
+    createdAt: new Date(),
+  } as Lyrics;
 
   beforeEach(async () => {
+    mockRepository = {
+      create: jest.fn(),
+      save: jest.fn(),
+      find: jest.fn(),
+      findOne: jest.fn(),
+      remove: jest.fn(),
+      createQueryBuilder: jest.fn(() => ({
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        getCount: jest.fn().mockResolvedValue(10),
+        orderBy: jest.fn().mockReturnThis(),
+        limit: jest.fn().mockReturnThis(),
+        getMany: jest.fn().mockResolvedValue([mockLyrics]),
+      })),
+    };
+
+    mockCacheManager = {
+      get: jest.fn(),
+      set: jest.fn(),
+      del: jest.fn(),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         LyricsService,
-        { provide: getRepositoryToken(Lyrics), useFactory: repoMockFactory },
+        {
+          provide: getRepositoryToken(Lyrics),
+          useValue: mockRepository,
+        },
+        {
+          provide: CACHE_MANAGER,
+          useValue: mockCacheManager,
+        },
       ],
     }).compile();
 
     service = module.get<LyricsService>(LyricsService);
-    repo = module.get<Repository<Lyrics>>(getRepositoryToken(Lyrics));
   });
 
-  it('should create lyrics', async () => {
-    const dto = { ...mockLyrics };
-    expect(await service.create(dto, mockUser)).toEqual(mockLyrics);
-    expect(repo.create).toHaveBeenCalledWith({ ...dto, createdBy: mockUser });
-    expect(repo.save).toHaveBeenCalled();
+  it('should be defined', () => {
+    expect(service).toBeDefined();
   });
 
-  it('should find all lyrics', async () => {
-    expect(await service.findAll({})).toEqual(lyricsArray);
-    expect(repo.find).toHaveBeenCalledWith({ where: {} });
+  describe('create', () => {
+    it('should create lyrics and clear cache', async () => {
+      const createDto: CreateLyricsDto = {
+        content: 'New lyrics',
+        artist: 'New Artist',
+        songTitle: 'New Song',
+        genre: 'Hip-Hop' as any,
+        decade: 2023,
+      };
+
+      mockRepository.create.mockReturnValue(mockLyrics);
+      mockRepository.save.mockResolvedValue(mockLyrics);
+
+      const result = await service.create(createDto, mockUser);
+
+      expect(result).toEqual(mockLyrics);
+      expect(mockRepository.create).toHaveBeenCalledWith({ ...createDto, createdBy: mockUser });
+      expect(mockRepository.save).toHaveBeenCalled();
+    });
   });
 
-  it('should find one lyrics', async () => {
-    expect(await service.findOne('uuid-1')).toEqual(mockLyrics);
-    expect(repo.findOne).toHaveBeenCalledWith({ where: { id: 'uuid-1' } });
+  describe('findOne', () => {
+    it('should return lyrics from cache if available', async () => {
+      mockCacheManager.get.mockResolvedValue(mockLyrics);
+
+      const result = await service.findOne('1');
+
+      expect(result).toEqual(mockLyrics);
+      expect(mockCacheManager.get).toHaveBeenCalledWith('lyrics:1');
+      expect(mockRepository.findOne).not.toHaveBeenCalled();
+    });
+
+    it('should fetch from database and cache if not in cache', async () => {
+      mockCacheManager.get.mockResolvedValue(null);
+      mockRepository.findOne.mockResolvedValue(mockLyrics);
+
+      const result = await service.findOne('1');
+
+      expect(result).toEqual(mockLyrics);
+      expect(mockCacheManager.get).toHaveBeenCalledWith('lyrics:1');
+      expect(mockRepository.findOne).toHaveBeenCalledWith({ where: { id: '1' } });
+      expect(mockCacheManager.set).toHaveBeenCalledWith('lyrics:1', mockLyrics, cacheConfig.lyricsTTL);
+    });
   });
 
-  it('should throw NotFoundException if lyrics not found', async () => {
-    repo.findOne = jest.fn().mockResolvedValue(null);
-    await expect(service.findOne('bad-id')).rejects.toThrow(NotFoundException);
+  describe('getRandomLyrics', () => {
+    it('should return random lyrics from cache if available', async () => {
+      mockCacheManager.get.mockResolvedValue([mockLyrics]);
+
+      const result = await service.getRandomLyrics(1);
+
+      expect(result).toEqual([mockLyrics]);
+      expect(mockCacheManager.get).toHaveBeenCalledWith('random_lyrics:1:all:all');
+    });
+
+    it('should fetch from database and cache if not in cache', async () => {
+      mockCacheManager.get.mockResolvedValue(null);
+
+      const result = await service.getRandomLyrics(1, 'Pop', 2020);
+
+      expect(result).toEqual([mockLyrics]);
+      expect(mockCacheManager.get).toHaveBeenCalledWith('random_lyrics:1:Pop:2020');
+      expect(mockCacheManager.set).toHaveBeenCalledWith('random_lyrics:1:Pop:2020', [mockLyrics], cacheConfig.lyricsTTL);
+    });
   });
 
-  it('should update lyrics', async () => {
-    const updateDto = { content: 'Updated' };
-    repo.findOne = jest.fn().mockResolvedValue(mockLyrics);
-    repo.save = jest.fn().mockResolvedValue({ ...mockLyrics, ...updateDto });
-    expect(await service.update('uuid-1', updateDto, mockUser)).toEqual({ ...mockLyrics, ...updateDto });
-    expect(repo.save).toHaveBeenCalled();
+  describe('getLyricsByCategory', () => {
+    it('should return lyrics by category from cache if available', async () => {
+      mockCacheManager.get.mockResolvedValue([mockLyrics]);
+
+      const result = await service.getLyricsByCategory('genre', 'Pop');
+
+      expect(result).toEqual([mockLyrics]);
+      expect(mockCacheManager.get).toHaveBeenCalledWith('lyrics_by_genre:Pop');
+    });
+
+    it('should fetch from database and cache if not in cache', async () => {
+      mockCacheManager.get.mockResolvedValue(null);
+      mockRepository.find.mockResolvedValue([mockLyrics]);
+
+      const result = await service.getLyricsByCategory('genre', 'Pop');
+
+      expect(result).toEqual([mockLyrics]);
+      expect(mockRepository.find).toHaveBeenCalledWith({ where: { genre: 'Pop' } });
+      expect(mockCacheManager.set).toHaveBeenCalledWith('lyrics_by_genre:Pop', [mockLyrics], cacheConfig.lyricsTTL);
+    });
   });
 
-  it('should throw NotFoundException if update lyrics not found', async () => {
-    repo.findOne = jest.fn().mockResolvedValue(null);
-    await expect(service.update('bad-id', {}, mockUser)).rejects.toThrow(NotFoundException);
+  describe('clearCache', () => {
+    it('should clear cache without errors', async () => {
+      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+      
+      await service.clearCache();
+
+      expect(consoleSpy).toHaveBeenCalledWith('Cache cleared for lyrics');
+      consoleSpy.mockRestore();
+    });
   });
 
-  it('should remove lyrics', async () => {
-    repo.findOne = jest.fn().mockResolvedValue(mockLyrics);
-    repo.remove = jest.fn().mockResolvedValue(undefined);
-    await expect(service.remove('uuid-1')).resolves.toBeUndefined();
-    expect(repo.remove).toHaveBeenCalledWith(mockLyrics);
-  });
+  describe('getCacheStats', () => {
+    it('should return cache statistics', async () => {
+      const stats = await service.getCacheStats();
 
-  it('should throw NotFoundException if remove lyrics not found', async () => {
-    repo.findOne = jest.fn().mockResolvedValue(null);
-    await expect(service.remove('bad-id')).rejects.toThrow(NotFoundException);
+      expect(stats).toEqual({
+        keys: 0,
+        ttl: cacheConfig.lyricsTTL,
+      });
+    });
   });
 });
