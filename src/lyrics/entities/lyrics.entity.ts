@@ -13,13 +13,13 @@ export class Lyrics {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column('text')
+  @Column('text', {unique: true})
   content: string;
 
-  @Column()
+  @Column({unique: true})
   artist: string;
 
-  @Column()
+  @Column({unique: true})
   songTitle: string;
 
   @Column({ type: 'enum', enum: Genre, default: Genre.Other })
