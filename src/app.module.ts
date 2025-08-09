@@ -8,6 +8,7 @@ import { LyricsModule } from './lyrics/lyrics.module';
 import { AuthModule } from './auth/auth.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { RolesGuard } from './auth/guards/roles.guard';
+import { RoomsModule } from './rooms/rooms.module';
 
 @Module({
   imports: [
@@ -87,7 +88,8 @@ import { RolesGuard } from './auth/guards/roles.guard';
     }),
     UsersModule,
     AuthModule,
-  LyricsModule,
+    LyricsModule,
+    RoomsModule,
   ],
   controllers: [AppController],
   providers: [

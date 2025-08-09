@@ -14,7 +14,7 @@ export class Lyrics {
   id: string;
 
   @Column('text', {unique: true})
-  content: string;
+  content!: string;
 
   @Column({unique: true})
   artist: string;
