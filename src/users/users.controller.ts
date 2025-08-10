@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -27,6 +28,20 @@ export class UsersController {
   @Get()
   findAll() {
     return this.usersService.findAll();
+  }
+
+  /**
+   * GET /leaderboard - Returns the top users by XP
+   * Query params: limit, offset (optional)
+   */
+  @Get('/leaderboard')
+  async getLeaderboard(
+    @Query('limit') limit?: string,
+    @Query('offset') offset?: string,
+  ) {
+    const lim = limit ? parseInt(limit, 10) : 10;
+    const off = offset ? parseInt(offset, 10) : 0;
+    return this.usersService.getLeaderboard(lim, off);
   }
   @UseGuards(JwtAuthGuard)
   @Get('profile')
