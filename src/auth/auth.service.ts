@@ -41,9 +41,13 @@ export class AuthService {
       }
     }
 
-    // Hash password
-    const saltRounds = 12;
-    const passwordHash = await bcrypt.hash(password, saltRounds);
+    // Hash password using helper
+    let passwordHash: string;
+    try {
+      passwordHash = await this.hashPassword(password);
+    } catch (err) {
+      throw new BadRequestException('Failed to hash password');
+    }
 
     // Create user
     const user = this.userRepository.create({
@@ -55,7 +59,6 @@ export class AuthService {
     try {
       await this.userRepository.save(user);
     } catch (error) {
-      // Handle any database constraints
       throw new BadRequestException('Failed to create user');
     }
 
@@ -88,8 +91,13 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    // Verify password
-    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+    // Verify password using helper
+    let isPasswordValid: boolean;
+    try {
+      isPasswordValid = await this.validatePassword(password, user.passwordHash);
+    } catch (err) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
 
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials');
@@ -114,6 +122,26 @@ export class AuthService {
       accessToken,
       user: userWithoutPassword,
     };
+  }
+  // Hash a plaintext password using bcrypt
+
+  private async hashPassword(password: string): Promise<string> {
+    const saltRounds = 12;
+    try {
+      return await bcrypt.hash(password, saltRounds);
+    } catch (err) {
+      throw new Error('Hashing failed');
+    }
+  }
+
+  // Validate a plaintext password against a hash
+  
+  private async validatePassword(plain: string, hashed: string): Promise<boolean> {
+    try {
+      return await bcrypt.compare(plain, hashed);
+    } catch (err) {
+      return false;
+    }
   }
 
   async validateUser(id: string): Promise<User | null> {
