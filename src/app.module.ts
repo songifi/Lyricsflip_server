@@ -7,6 +7,7 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { UsersModule } from './users/users.module';
 import { LyricsModule } from './lyrics/lyrics.module';
 import { AuthModule } from './auth/auth.module';
+import { GameSessionsModule } from './game-sessions/game-sessions.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { RolesGuard } from './auth/guards/roles.guard';
 import { cacheConfig } from './config/cache.config';
@@ -97,6 +98,7 @@ import { cacheConfig } from './config/cache.config';
     }),
     UsersModule,
     AuthModule,
+    GameSessionsModule,
   LyricsModule,
   ],
   controllers: [AppController],

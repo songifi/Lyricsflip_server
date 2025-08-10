@@ -6,7 +6,9 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   Index,
+  OneToMany,
 } from 'typeorm';
+import { GameSession } from '../../game-sessions/entities/game-session.entity';
 
 @Entity('users')
 export class User {
@@ -44,4 +46,7 @@ export class User {
 
   @Column({ type: 'varchar', length: 20, default: 'user' })
   role: string; // 'user' or 'admin'
+
+  @OneToMany(() => GameSession, gameSession => gameSession.player)
+  gameSessions: GameSession[];
 }
