@@ -60,8 +60,11 @@ export class User {
   lastLoginAt?: Date;
 
   @Column({ type: 'varchar', length: 20, default: 'user' })
-  role: string; // 'user' or 'admin'
+  role: string;
 
-  @OneToMany(() => GameSession, gameSession => gameSession.player)
+  @Column({ type: 'boolean', default: true })
+  isActive: boolean;
+
+  @OneToMany(() => GameSession, (gameSession) => gameSession.player)
   gameSessions: GameSession[];
 }

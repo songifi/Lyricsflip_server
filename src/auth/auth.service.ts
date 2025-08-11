@@ -12,6 +12,7 @@ import * as bcrypt from 'bcrypt';
 import { SignupDto } from './dto/signup.dto';
 import { LoginDto } from './dto/login.dto';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
+import { Role } from './enums/role';
 import { User } from 'src/users/entities/user.entity';
 
 @Injectable()
@@ -67,6 +68,7 @@ export class AuthService {
       sub: user.id,
       email: user.email,
       username: user.username,
+      role: user.role as Role,
     };
     const accessToken = this.jwtService.sign(payload);
 
@@ -94,7 +96,10 @@ export class AuthService {
     // Verify password using helper
     let isPasswordValid: boolean;
     try {
-      isPasswordValid = await this.validatePassword(password, user.passwordHash);
+      isPasswordValid = await this.validatePassword(
+        password,
+        user.passwordHash,
+      );
     } catch (err) {
       throw new UnauthorizedException('Invalid credentials');
     }
@@ -112,6 +117,7 @@ export class AuthService {
       sub: user.id,
       email: user.email,
       username: user.username,
+      role: user.role as Role,
     };
     const accessToken = this.jwtService.sign(payload);
 
@@ -135,8 +141,11 @@ export class AuthService {
   }
 
   // Validate a plaintext password against a hash
-  
-  private async validatePassword(plain: string, hashed: string): Promise<boolean> {
+
+  private async validatePassword(
+    plain: string,
+    hashed: string,
+  ): Promise<boolean> {
     try {
       return await bcrypt.compare(plain, hashed);
     } catch (err) {
