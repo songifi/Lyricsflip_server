@@ -10,6 +10,14 @@ import {
 } from 'typeorm';
 import { GameSession } from '../../game-sessions/entities/game-session.entity';
 
+export enum UserLevel {
+  GOSSIP_ROOKIE = 'Gossip Rookie',
+  WORD_WHISPERER = 'Word Whisperer',
+  LYRIC_SNIPER = 'Lyric Sniper',
+  BAR_GENIUS = 'Bar Genius',
+  GOSSIP_GOD = 'Gossip God',
+}
+
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn('uuid')
@@ -30,10 +38,17 @@ export class User {
   passwordHash: string;
 
   @Column({ default: 0 })
-  xp: number;
+  xp: number; // total experience points
 
   @Column({ default: 1 })
-  level: number;
+  level: number; // numeric level (1 = Rookie, etc.)
+
+  @Column({
+    type: 'enum',
+    enum: UserLevel,
+    default: UserLevel.GOSSIP_ROOKIE,
+  })
+  levelTitle: UserLevel; // human-readable title
 
   @CreateDateColumn()
   createdAt: Date;
