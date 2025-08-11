@@ -37,6 +37,7 @@ export class LyricsController {
   @ApiQuery({ name: 'artist', required: false })
   @ApiQuery({ name: 'genre', required: false })
   @ApiQuery({ name: 'decade', required: false })
+  @ApiResponse({ status: 200, description: 'List of lyrics.' })
   @Get()
   findAll(@Query() query: any) {
     return this.lyricsService.findAll(query);
