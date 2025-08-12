@@ -11,6 +11,7 @@ import { GameSessionsModule } from './game-sessions/game-sessions.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { RolesGuard } from './auth/guards/roles.guard';
 import { cacheConfig } from './config/cache.config';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -81,12 +82,12 @@ import { cacheConfig } from './config/cache.config';
           },
 
           entities: [__dirname + '/**/*.entity{.ts,.js}'],
-          synchronize: false, 
+          synchronize: false,
 
           // --- Query Performance Logging ---
           // Log all queries and errors
-          logging: ['query', 'error'], 
-           // Log queries that take longer than 250ms
+          logging: ['query', 'error'],
+          // Log queries that take longer than 250ms
           maxQueryExecutionTime: 250,
 
           // --- Connection Pooling Configuration ---
@@ -99,7 +100,8 @@ import { cacheConfig } from './config/cache.config';
     UsersModule,
     AuthModule,
     GameSessionsModule,
-  LyricsModule,
+    LyricsModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [
