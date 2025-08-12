@@ -94,7 +94,10 @@ export class AuthService {
     // Verify password using helper
     let isPasswordValid: boolean;
     try {
-      isPasswordValid = await this.validatePassword(password, user.passwordHash);
+      isPasswordValid = await this.validatePassword(
+        password,
+        user.passwordHash,
+      );
     } catch (err) {
       throw new UnauthorizedException('Invalid credentials');
     }
@@ -112,6 +115,7 @@ export class AuthService {
       sub: user.id,
       email: user.email,
       username: user.username,
+      roles: [user.role],
     };
     const accessToken = this.jwtService.sign(payload);
 
@@ -119,7 +123,7 @@ export class AuthService {
     const { passwordHash: _, ...userWithoutPassword } = user;
 
     return {
-      accessToken,
+      accessToken: this.jwtService.sign(payload),
       user: userWithoutPassword,
     };
   }
@@ -135,8 +139,11 @@ export class AuthService {
   }
 
   // Validate a plaintext password against a hash
-  
-  private async validatePassword(plain: string, hashed: string): Promise<boolean> {
+
+  private async validatePassword(
+    plain: string,
+    hashed: string,
+  ): Promise<boolean> {
     try {
       return await bcrypt.compare(plain, hashed);
     } catch (err) {
