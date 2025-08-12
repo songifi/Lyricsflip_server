@@ -25,6 +25,7 @@ import {
 import { User } from '../users/entities/user.entity';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/auth/enums/role';
+import { GetUser } from 'src/auth/decorators/user.decorator';
 
 @ApiTags('lyrics')
 @Controller('lyrics')
@@ -37,11 +38,7 @@ export class LyricsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
   @Post()
-  create(
-    @Body() createLyricsDto: CreateLyricsDto,
-    @Request() req: { user?: unknown },
-  ) {
-    const user = req.user as User;
+  create(@Body() createLyricsDto: CreateLyricsDto, @GetUser() user: User) {
     return this.lyricsService.create(createLyricsDto, user);
   }
 
@@ -127,9 +124,8 @@ export class LyricsController {
   update(
     @Param('id') id: string,
     @Body() updateLyricsDto: UpdateLyricsDto,
-    @Request() req: { user?: unknown },
+    @GetUser() user: User,
   ) {
-    const user = req.user as User;
     return this.lyricsService.update(id, updateLyricsDto, user);
   }
 
