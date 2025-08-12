@@ -9,6 +9,7 @@ import {
   OneToMany,
 } from 'typeorm';
 import { GameSession } from '../../game-sessions/entities/game-session.entity';
+import { Role } from 'src/auth/roles/role.enum';
 
 export enum UserLevel {
   GOSSIP_ROOKIE = 'Gossip Rookie',
@@ -59,8 +60,13 @@ export class User {
   @Column({ nullable: true })
   lastLoginAt?: Date;
 
-  @Column({ type: 'varchar', length: 20, default: 'user' })
-  role: string;
+  @Column({
+    type: 'varchar',
+    length: 20,
+    enum: Role,
+    default: Role.User,
+  }) // Default role for new users
+  role: Role; // 'user' or 'admin'
 
   @Column({ type: 'boolean', default: true })
   isActive: boolean;

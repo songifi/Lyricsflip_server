@@ -12,7 +12,7 @@ import * as bcrypt from 'bcrypt';
 import { SignupDto } from './dto/signup.dto';
 import { LoginDto } from './dto/login.dto';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
-import { Role } from './enums/role';
+import { Role } from './roles/role.enum';
 import { User } from 'src/users/entities/user.entity';
 
 @Injectable()
@@ -125,7 +125,7 @@ export class AuthService {
     const { passwordHash: _, ...userWithoutPassword } = user;
 
     return {
-      accessToken,
+      accessToken: this.jwtService.sign(payload),
       user: userWithoutPassword,
     };
   }

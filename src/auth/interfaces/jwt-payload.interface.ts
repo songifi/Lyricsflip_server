@@ -1,4 +1,4 @@
-import { Role } from '../enums/role';
+import { Role } from '../roles/role.enum';
 
 export interface JwtPayload {
   sub: string; // user ID
@@ -7,4 +7,5 @@ export interface JwtPayload {
   role: Role;
   iat?: number;
   exp?: number;
+  roles?: Role[] | undefined;
 }

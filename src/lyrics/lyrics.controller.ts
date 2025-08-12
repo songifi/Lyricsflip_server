@@ -24,7 +24,7 @@ import {
 } from '@nestjs/swagger';
 import { User } from '../users/entities/user.entity';
 import { Roles } from 'src/auth/decorators/roles.decorator';
-import { Role } from 'src/auth/enums/role';
+import { Role } from 'src/auth/roles/role.enum';
 import { GetUser } from 'src/auth/decorators/user.decorator';
 
 @ApiTags('lyrics')
@@ -36,7 +36,7 @@ export class LyricsController {
   @ApiOperation({ summary: 'Create new lyrics' })
   @ApiResponse({ status: 201, description: 'Lyrics created.' })
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles(Role.Admin)
   @Post()
   create(@Body() createLyricsDto: CreateLyricsDto, @GetUser() user: User) {
     return this.lyricsService.create(createLyricsDto, user);
@@ -119,7 +119,7 @@ export class LyricsController {
   @ApiOperation({ summary: 'Update lyrics' })
   @ApiResponse({ status: 200, description: 'Lyrics updated.' })
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles(Role.Admin)
   @Patch(':id')
   update(
     @Param('id') id: string,
@@ -133,7 +133,7 @@ export class LyricsController {
   @ApiOperation({ summary: 'Delete lyrics' })
   @ApiResponse({ status: 204, description: 'Lyrics deleted.' })
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles(Role.Admin)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.lyricsService.remove(id);
@@ -143,7 +143,7 @@ export class LyricsController {
   @ApiOperation({ summary: 'Clear lyrics cache (Admin only)' })
   @ApiResponse({ status: 200, description: 'Cache cleared successfully.' })
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles(Role.Admin)
   @Post('cache/clear')
   clearCache() {
     return this.lyricsService.clearCache();
@@ -153,7 +153,7 @@ export class LyricsController {
   @ApiOperation({ summary: 'Get cache statistics (Admin only)' })
   @ApiResponse({ status: 200, description: 'Cache statistics retrieved.' })
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles(Role.Admin)
   @Get('cache/stats')
   getCacheStats() {
     return this.lyricsService.getCacheStats();
