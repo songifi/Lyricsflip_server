@@ -12,6 +12,7 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { RolesGuard } from './auth/guards/roles.guard';
 import { cacheConfig } from './config/cache.config';
 import { AdminModule } from './admin/admin.module';
+import { GameModule } from './game/game.module';
 
 @Module({
   imports: [
@@ -102,6 +103,7 @@ import { AdminModule } from './admin/admin.module';
     GameSessionsModule,
     LyricsModule,
     AdminModule,
+    GameModule,
   ],
   controllers: [AppController],
   providers: [
