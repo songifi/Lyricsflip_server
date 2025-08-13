@@ -12,6 +12,7 @@ import * as bcrypt from 'bcrypt';
 import { SignupDto } from './dto/signup.dto';
 import { LoginDto } from './dto/login.dto';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
+import { Role } from './roles/role.enum';
 import { User } from 'src/users/entities/user.entity';
 
 @Injectable()
@@ -41,9 +42,13 @@ export class AuthService {
       }
     }
 
-    // Hash password
-    const saltRounds = 12;
-    const passwordHash = await bcrypt.hash(password, saltRounds);
+    // Hash password using helper
+    let passwordHash: string;
+    try {
+      passwordHash = await this.hashPassword(password);
+    } catch (err) {
+      throw new BadRequestException('Failed to hash password');
+    }
 
     // Create user
     const user = this.userRepository.create({
@@ -55,7 +60,6 @@ export class AuthService {
     try {
       await this.userRepository.save(user);
     } catch (error) {
-      // Handle any database constraints
       throw new BadRequestException('Failed to create user');
     }
 
@@ -64,6 +68,7 @@ export class AuthService {
       sub: user.id,
       email: user.email,
       username: user.username,
+      role: user.role as Role,
     };
     const accessToken = this.jwtService.sign(payload);
 
@@ -88,8 +93,16 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    // Verify password
-    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+    // Verify password using helper
+    let isPasswordValid: boolean;
+    try {
+      isPasswordValid = await this.validatePassword(
+        password,
+        user.passwordHash,
+      );
+    } catch (err) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
 
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials');
@@ -104,6 +117,7 @@ export class AuthService {
       sub: user.id,
       email: user.email,
       username: user.username,
+      role: user.role as Role,
     };
     const accessToken = this.jwtService.sign(payload);
 
@@ -111,9 +125,32 @@ export class AuthService {
     const { passwordHash: _, ...userWithoutPassword } = user;
 
     return {
-      accessToken,
+      accessToken: this.jwtService.sign(payload),
       user: userWithoutPassword,
     };
+  }
+  // Hash a plaintext password using bcrypt
+
+  private async hashPassword(password: string): Promise<string> {
+    const saltRounds = 12;
+    try {
+      return await bcrypt.hash(password, saltRounds);
+    } catch (err) {
+      throw new Error('Hashing failed');
+    }
+  }
+
+  // Validate a plaintext password against a hash
+
+  private async validatePassword(
+    plain: string,
+    hashed: string,
+  ): Promise<boolean> {
+    try {
+      return await bcrypt.compare(plain, hashed);
+    } catch (err) {
+      return false;
+    }
   }
 
   async validateUser(id: string): Promise<User | null> {

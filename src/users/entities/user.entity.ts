@@ -6,7 +6,18 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   Index,
+  OneToMany,
 } from 'typeorm';
+import { GameSession } from '../../game-sessions/entities/game-session.entity';
+import { Role } from 'src/auth/roles/role.enum';
+
+export enum UserLevel {
+  GOSSIP_ROOKIE = 'Gossip Rookie',
+  WORD_WHISPERER = 'Word Whisperer',
+  LYRIC_SNIPER = 'Lyric Sniper',
+  BAR_GENIUS = 'Bar Genius',
+  GOSSIP_GOD = 'Gossip God',
+}
 
 @Entity('users')
 export class User {
@@ -28,10 +39,17 @@ export class User {
   passwordHash: string;
 
   @Column({ default: 0 })
-  xp: number;
+  xp: number; // total experience points
 
   @Column({ default: 1 })
-  level: number;
+  level: number; // numeric level (1 = Rookie, etc.)
+
+  @Column({
+    type: 'enum',
+    enum: UserLevel,
+    default: UserLevel.GOSSIP_ROOKIE,
+  })
+  levelTitle: UserLevel; // human-readable title
 
   @CreateDateColumn()
   createdAt: Date;
@@ -42,6 +60,17 @@ export class User {
   @Column({ nullable: true })
   lastLoginAt?: Date;
 
-  @Column({ type: 'varchar', length: 20, default: 'user' })
-  role: string; // 'user' or 'admin'
+  @Column({
+    type: 'varchar',
+    length: 20,
+    enum: Role,
+    default: Role.User,
+  }) // Default role for new users
+  role: Role; // 'user' or 'admin'
+
+  @Column({ type: 'boolean', default: true })
+  isActive: boolean;
+
+  @OneToMany(() => GameSession, (gameSession) => gameSession.player)
+  gameSessions: GameSession[];
 }

@@ -195,5 +195,4 @@ async function bootstrap() {
   console.log('Seeding complete');
   await app.close();
 }
-
 bootstrap();
