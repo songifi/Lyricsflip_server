@@ -1,14 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { UserLevel } from '../users/entities/user.entity';
+import { User } from '../users/entities/user.entity';
 import { XpLevelService } from '../xp-level/xp-level.service';
 
 @Injectable()
 export class GameLogicService {
   constructor(
-    @InjectRepository(UserLevel)
-    private readonly userRepo: Repository<UserLevel>,
+    @InjectRepository(User)
+    private readonly userRepo: Repository<User>,
     private readonly xpLevelService: XpLevelService,
   ) {}
 

@@ -13,6 +13,7 @@ import { RolesGuard } from './auth/guards/roles.guard';
 import { cacheConfig } from './config/cache.config';
 import { AdminModule } from './admin/admin.module';
 import { GameModule } from './game/game.module';
+import { TokensModule } from './tokens/tokens.module';
 
 @Module({
   imports: [
@@ -104,6 +105,7 @@ import { GameModule } from './game/game.module';
     LyricsModule,
     AdminModule,
     GameModule,
+    TokensModule,
   ],
   controllers: [AppController],
   providers: [
