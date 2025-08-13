@@ -71,6 +71,9 @@ export class User {
   @Column({ type: 'boolean', default: true })
   isActive: boolean;
 
+  @Column({ type: 'int', default: 100 })
+  mockTokenBalance: number; // Starting balance of 100 mock tokens
+
   @OneToMany(() => GameSession, (gameSession) => gameSession.player)
   gameSessions: GameSession[];
 }
