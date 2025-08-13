@@ -15,6 +15,7 @@ import { cacheConfig } from './config/cache.config';
 import { AdminModule } from './admin/admin.module';
 import { GameModule } from './game/game.module';
 import { TokensModule } from './tokens/tokens.module';
+import { GameHistoryModule } from './game-history/game-history.module';
 
 @Module({
   imports: [
@@ -101,6 +102,7 @@ import { TokensModule } from './tokens/tokens.module';
     AdminModule,
     GameModule,
     TokensModule,
+    GameHistoryModule,
   ],
   controllers: [AppController],
   providers: [
@@ -109,4 +111,4 @@ import { TokensModule } from './tokens/tokens.module';
     { provide: 'APP_GUARD', useClass: RolesGuard },
   ],
 })
-export class AppModule {}
+export class AppModule { }
