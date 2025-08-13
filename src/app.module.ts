@@ -10,6 +10,7 @@ import { AuthModule } from './auth/auth.module';
 import { GameSessionsModule } from './game-sessions/game-sessions.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { RolesGuard } from './auth/guards/roles.guard';
+import { RoomsModule } from './rooms/rooms.module';
 import { cacheConfig } from './config/cache.config';
 import { AdminModule } from './admin/admin.module';
 import { GameModule } from './game/game.module';
@@ -56,7 +57,6 @@ import { TokensModule } from './tokens/tokens.module';
 
           // --- Read/Write Splitting Configuration ---
           replication: {
-            // Master connection for all write operations
             master: {
               host: dbHost,
               port: dbPort,
@@ -64,10 +64,8 @@ import { TokensModule } from './tokens/tokens.module';
               password: dbPassword,
               database: dbName,
             },
-            // Replica connections for all read operations
             slaves: [
               {
-                // Use replica-specific variables, or fall back to the primary ones.
                 host: configService.get<string>('DB_REPLICA_HOST', dbHost),
                 port: configService.get<number>('DB_REPLICA_PORT', dbPort),
                 username: configService.get<string>(
@@ -86,13 +84,9 @@ import { TokensModule } from './tokens/tokens.module';
           entities: [__dirname + '/**/*.entity{.ts,.js}'],
           synchronize: false,
 
-          // --- Query Performance Logging ---
-          // Log all queries and errors
           logging: ['query', 'error'],
-          // Log queries that take longer than 250ms
           maxQueryExecutionTime: 250,
 
-          // --- Connection Pooling Configuration ---
           extra: {
             poolSize: 10,
           },
@@ -103,6 +97,7 @@ import { TokensModule } from './tokens/tokens.module';
     AuthModule,
     GameSessionsModule,
     LyricsModule,
+    RoomsModule,
     AdminModule,
     GameModule,
     TokensModule,
