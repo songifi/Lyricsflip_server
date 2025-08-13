@@ -12,6 +12,7 @@ import * as bcrypt from 'bcrypt';
 import { SignupDto } from './dto/signup.dto';
 import { LoginDto } from './dto/login.dto';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
+import { Role } from './roles/role.enum';
 import { User } from 'src/users/entities/user.entity';
 
 @Injectable()
@@ -67,6 +68,7 @@ export class AuthService {
       sub: user.id,
       email: user.email,
       username: user.username,
+      role: user.role as Role,
     };
     const accessToken = this.jwtService.sign(payload);
 
@@ -115,7 +117,7 @@ export class AuthService {
       sub: user.id,
       email: user.email,
       username: user.username,
-      roles: [user.role],
+      role: user.role as Role,
     };
     const accessToken = this.jwtService.sign(payload);
 

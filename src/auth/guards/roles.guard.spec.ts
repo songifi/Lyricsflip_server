@@ -1,47 +1,71 @@
+import { ForbiddenException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { RolesGuard } from './roles.guard';
 import { Role } from '../roles/role.enum';
-import { ExecutionContext } from '@nestjs/common';
+import { RolesGuard } from './roles.guard';
 
 describe('RolesGuard', () => {
   let guard: RolesGuard;
   let reflector: Reflector;
+
+  const createExecutionContext = (user?: { role?: Role }) => {
+    return {
+      switchToHttp: () => ({
+        getRequest: () => ({ user }),
+      }),
+      getHandler: () => ({}),
+      getClass: () => ({}),
+    } as unknown as import('@nestjs/common').ExecutionContext;
+  };
 
   beforeEach(() => {
     reflector = new Reflector();
     guard = new RolesGuard(reflector);
   });
 
-  const createMockExecutionContext = (user: any): ExecutionContext =>
-    ({
-      switchToHttp: () => ({
-        getRequest: () => ({ user }),
-      }),
-      getHandler: () => {},
-      getClass: () => {},
-    }) as any;
+  it('allows when no roles metadata is set', () => {
+    jest
+      .spyOn(reflector, 'getAllAndOverride')
+      .mockReturnValueOnce(undefined as any);
 
-  it('should allow access if no roles are required', () => {
-    jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue(undefined);
-    const mockContext = createMockExecutionContext({ roles: [Role.User] });
-    expect(guard.canActivate(mockContext)).toBe(true);
+    const can = guard.canActivate(createExecutionContext({ role: Role.User }));
+    expect(can).toBe(true);
   });
 
-  it('should deny access if user has no roles assigned', () => {
-    jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue([Role.Admin]);
-    const mockContext = createMockExecutionContext({ roles: [] });
-    expect(guard.canActivate(mockContext)).toBe(false);
+  it('allows when user has required role', () => {
+    jest
+      .spyOn(reflector, 'getAllAndOverride')
+      .mockReturnValueOnce([Role.Admin]);
+
+    const can = guard.canActivate(createExecutionContext({ role: Role.Admin }));
+    expect(can).toBe(true);
   });
 
-  it('should deny access if user does not have the required role', () => {
-    jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue([Role.Admin]);
-    const mockContext = createMockExecutionContext({ roles: [Role.User] });
-    expect(guard.canActivate(mockContext)).toBe(false);
+  it('denies when user is missing', () => {
+    jest
+      .spyOn(reflector, 'getAllAndOverride')
+      .mockReturnValueOnce([Role.Admin]);
+
+    expect(() => guard.canActivate(createExecutionContext(undefined))).toThrow(
+      ForbiddenException,
+    );
   });
 
-  it('should allow access if user has the required admin role', () => {
-    jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue([Role.Admin]);
-    const mockContext = createMockExecutionContext({ roles: [Role.Admin] });
-    expect(guard.canActivate(mockContext)).toBe(true);
+  it('denies when user lacks required role', () => {
+    jest
+      .spyOn(reflector, 'getAllAndOverride')
+      .mockReturnValueOnce([Role.Admin]);
+
+    expect(() =>
+      guard.canActivate(createExecutionContext({ role: Role.User })),
+    ).toThrow(ForbiddenException);
+  });
+
+  it('supports multiple allowed roles', () => {
+    jest
+      .spyOn(reflector, 'getAllAndOverride')
+      .mockReturnValueOnce([Role.Admin, Role.User]);
+
+    const can = guard.canActivate(createExecutionContext({ role: Role.User }));
+    expect(can).toBe(true);
   });
 });

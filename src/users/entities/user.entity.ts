@@ -68,6 +68,9 @@ export class User {
   }) // Default role for new users
   role: Role; // 'user' or 'admin'
 
+  @Column({ type: 'boolean', default: true })
+  isActive: boolean;
+
   @OneToMany(() => GameSession, (gameSession) => gameSession.player)
   gameSessions: GameSession[];
 }

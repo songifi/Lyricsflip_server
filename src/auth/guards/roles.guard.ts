@@ -7,6 +7,7 @@ import {
 import { Reflector } from '@nestjs/core';
 import { Role } from '../roles/role.enum';
 import { ROLES_KEY } from '../roles/roles.decorator';
+
 @Injectable()
 export class RolesGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
@@ -16,11 +17,21 @@ export class RolesGuard implements CanActivate {
       context.getHandler(),
       context.getClass(),
     ]);
-    if (!requiredRoles) {
+    if (!requiredRoles?.length) {
       return true;
     }
-    const { user } = context.switchToHttp().getRequest();
-    // The user object now contains the roles from the JWT payload
-    return requiredRoles.some((role) => user.roles?.includes(role));
+    const request = context
+      .switchToHttp()
+      .getRequest<{ user?: { role?: Role } }>();
+    const { user } = request;
+    if (!user) {
+      throw new ForbiddenException('You do not have permission');
+    }
+
+    const hasRequiredRole = requiredRoles.some((role) => role === user.role);
+    if (!hasRequiredRole) {
+      throw new ForbiddenException('You do not have permission (roles)');
+    }
+    return true;
   }
 }
