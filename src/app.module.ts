@@ -11,6 +11,7 @@ import { GameSessionsModule } from './game-sessions/game-sessions.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { RolesGuard } from './auth/guards/roles.guard';
 import { cacheConfig } from './config/cache.config';
+import { CommonModule } from './common/common.module';
 
 @Module({
   imports: [
@@ -100,6 +101,7 @@ import { cacheConfig } from './config/cache.config';
     AuthModule,
     GameSessionsModule,
   LyricsModule,
+  CommonModule,
   ],
   controllers: [AppController],
   providers: [
