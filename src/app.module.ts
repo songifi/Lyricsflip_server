@@ -12,6 +12,7 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { RolesGuard } from './auth/guards/roles.guard';
 import { RoomsModule } from './rooms/rooms.module';
 import { cacheConfig } from './config/cache.config';
+import { CommonModule } from './common/common.module';
 import { AdminModule } from './admin/admin.module';
 import { GameModule } from './game/game.module';
 import { TokensModule } from './tokens/tokens.module';
@@ -98,6 +99,7 @@ import { GameHistoryModule } from './game-history/game-history.module';
     AuthModule,
     GameSessionsModule,
     LyricsModule,
+  CommonModule,
     RoomsModule,
     AdminModule,
     GameModule,
