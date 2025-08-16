@@ -17,6 +17,7 @@ import { AdminModule } from './admin/admin.module';
 import { GameModule } from './game/game.module';
 import { TokensModule } from './tokens/tokens.module';
 import { GameHistoryModule } from './game-history/game-history.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -99,12 +100,13 @@ import { GameHistoryModule } from './game-history/game-history.module';
     AuthModule,
     GameSessionsModule,
     LyricsModule,
-  CommonModule,
+    CommonModule,
     RoomsModule,
     AdminModule,
     GameModule,
     TokensModule,
     GameHistoryModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [
