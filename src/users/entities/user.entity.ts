@@ -16,7 +16,40 @@ export enum UserLevel {
   WORD_WHISPERER = 'Word Whisperer',
   LYRIC_SNIPER = 'Lyric Sniper',
   BAR_GENIUS = 'Bar Genius',
-  GOSSIP_GOD = 'Gossip God',
+  GOSSIP_GURU = 'Gossip Guru',
+}
+
+export enum MusicGenre {
+  POP = 'Pop',
+  ROCK = 'Rock',
+  HIP_HOP = 'Hip Hop',
+  RAP = 'Rap',
+  R_AND_B = 'R&B',
+  COUNTRY = 'Country',
+  JAZZ = 'Jazz',
+  BLUES = 'Blues',
+  ELECTRONIC = 'Electronic',
+  DANCE = 'Dance',
+  REGGAE = 'Reggae',
+  FOLK = 'Folk',
+  INDIE = 'Indie',
+  ALTERNATIVE = 'Alternative',
+  METAL = 'Metal',
+  PUNK = 'Punk',
+  SOUL = 'Soul',
+  FUNK = 'Funk',
+  CLASSICAL = 'Classical',
+  WORLD = 'World',
+}
+
+export enum MusicDecade {
+  SIXTIES = '1960s',
+  SEVENTIES = '1970s',
+  EIGHTIES = '1980s',
+  NINETIES = '1990s',
+  TWO_THOUSANDS = '2000s',
+  TWENTY_TENS = '2010s',
+  TWENTY_TWENTIES = '2020s',
 }
 
 @Entity('users')
@@ -74,6 +107,21 @@ export class User {
   @Column({ type: 'int', default: 100 })
   mockTokenBalance: number; // Starting balance of 100 mock tokens
 
-  @OneToMany(() => GameSession, (gameSession) => gameSession.player)
+  @Column({
+    type: 'enum',
+    enum: MusicGenre,
+    nullable: true,
+  })
+  preferredGenre?: MusicGenre;
+
+  @Column({
+    type: 'enum',
+    enum: MusicDecade,
+    nullable: true,
+  })
+  preferredDecade?: MusicDecade;
+
+  @OneToMany(() => GameSession, gameSession => gameSession.player)
+
   gameSessions: GameSession[];
 }

@@ -13,6 +13,7 @@ import { ApiQuery, ApiResponse, ApiTags, ApiOperation } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateUserPreferencesDto } from './dto/update-user-preferences.dto';
 import { User } from './entities/user.entity';
 import { GetUser } from 'src/auth/decorators/user.decorator';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
@@ -70,8 +71,50 @@ export class UsersController {
       email: user.email,
       xp: user.xp,
       level: user.level,
+      preferredGenre: user.preferredGenre,
+      preferredDecade: user.preferredDecade,
       createdAt: user.createdAt,
       lastLoginAt: user.lastLoginAt,
+    };
+  }
+
+  /**
+   * PATCH /users/preferences - Update user preferences
+   * Updates the current user's music genre and decade preferences
+   */
+  @UseGuards(JwtAuthGuard)
+  @Patch('preferences')
+  @ApiOperation({ summary: 'Update user preferences' })
+  @ApiResponse({ status: 200, description: 'User preferences updated successfully.' })
+  @ApiResponse({ status: 400, description: 'Invalid preference data.' })
+  @ApiResponse({ status: 401, description: 'Unauthorized.' })
+  async updatePreferences(
+    @GetUser() user: User,
+    @Body() updatePreferencesDto: UpdateUserPreferencesDto,
+  ) {
+    const updatedUser = await this.usersService.updatePreferences(user.id, updatePreferencesDto);
+    return {
+      message: 'Preferences updated successfully',
+      preferences: {
+        preferredGenre: updatedUser.preferredGenre,
+        preferredDecade: updatedUser.preferredDecade,
+      },
+    };
+  }
+
+  /**
+   * GET /users/preferences - Get user preferences
+   * Returns the current user's music preferences
+   */
+  @UseGuards(JwtAuthGuard)
+  @Get('preferences')
+  @ApiOperation({ summary: 'Get user preferences' })
+  @ApiResponse({ status: 200, description: 'User preferences retrieved successfully.' })
+  @ApiResponse({ status: 401, description: 'Unauthorized.' })
+  async getUserPreferences(@GetUser() user: User) {
+    const preferences = await this.usersService.getUserPreferences(user.id);
+    return {
+      preferences,
     };
   }
 

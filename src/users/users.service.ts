@@ -1,9 +1,10 @@
-import { Injectable, BadRequestException, Inject } from '@nestjs/common';
+import { Injectable, BadRequestException, Inject, NotFoundException } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateUserPreferencesDto } from './dto/update-user-preferences.dto';
 import { User } from './entities/user.entity';
 import { Cache } from 'cache-manager';
 
@@ -16,25 +17,80 @@ export class UsersService {
     private cacheManager: Cache,
   ) {}
 
-  create(createUserDto: CreateUserDto) {
-    return 'This action adds a new user';
+  async create(createUserDto: CreateUserDto) {
+    // This method should be implemented based on your auth service requirements
+    throw new BadRequestException('User creation should be handled through auth service');
   }
 
-  findAll() {
+  async findAll() {
     return this.userRepository.find();
   }
 
-  findOne(id: string) {
-    return this.userRepository.findOne({ where: { id } });
+  async findOne(id: number) {
+    const user = await this.userRepository.findOne({ where: { id: String(id) } });
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+    return user;
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async update(id: number, updateUserDto: UpdateUserDto) {
+    const user = await this.findOne(id);
+    Object.assign(user, updateUserDto);
+    return this.userRepository.save(user);
   }
 
-  async remove(id: string) {
-    const result = await this.userRepository.delete(id);
-    return result;
+  async remove(id: number) {
+    const user = await this.findOne(id);
+    await this.userRepository.remove(user);
+    return { message: 'User deleted successfully' };
+  }
+
+  /**
+   * Update user preferences (genre and decade)
+   * @param userId The ID of the user to update
+   * @param preferencesDto The preferences to update
+   * @returns Updated user with preferences
+   */
+  async updatePreferences(userId: string, preferencesDto: UpdateUserPreferencesDto): Promise<User> {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException(`User with ID ${userId} not found`);
+    }
+
+    // Update only the provided preferences
+    if (preferencesDto.preferredGenre !== undefined) {
+      user.preferredGenre = preferencesDto.preferredGenre;
+    }
+    if (preferencesDto.preferredDecade !== undefined) {
+      user.preferredDecade = preferencesDto.preferredDecade;
+    }
+
+    // Clear cache for this user if needed
+    await this.cacheManager.del(`user:${userId}`);
+
+    return this.userRepository.save(user);
+  }
+
+  /**
+   * Get user preferences
+   * @param userId The ID of the user
+   * @returns User preferences
+   */
+  async getUserPreferences(userId: string): Promise<{ preferredGenre?: string; preferredDecade?: string }> {
+    const user = await this.userRepository.findOne({ 
+      where: { id: userId },
+      select: ['preferredGenre', 'preferredDecade']
+    });
+    
+    if (!user) {
+      throw new NotFoundException(`User with ID ${userId} not found`);
+    }
+
+    return {
+      preferredGenre: user.preferredGenre,
+      preferredDecade: user.preferredDecade,
+    };
   }
 
   /**
