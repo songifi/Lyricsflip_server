@@ -10,7 +10,14 @@ import { AuthModule } from './auth/auth.module';
 import { GameSessionsModule } from './game-sessions/game-sessions.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { RolesGuard } from './auth/guards/roles.guard';
+import { RoomsModule } from './rooms/rooms.module';
 import { cacheConfig } from './config/cache.config';
+import { CommonModule } from './common/common.module';
+import { AdminModule } from './admin/admin.module';
+import { GameModule } from './game/game.module';
+import { TokensModule } from './tokens/tokens.module';
+import { GameHistoryModule } from './game-history/game-history.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -53,7 +60,6 @@ import { cacheConfig } from './config/cache.config';
 
           // --- Read/Write Splitting Configuration ---
           replication: {
-            // Master connection for all write operations
             master: {
               host: dbHost,
               port: dbPort,
@@ -61,10 +67,8 @@ import { cacheConfig } from './config/cache.config';
               password: dbPassword,
               database: dbName,
             },
-            // Replica connections for all read operations
             slaves: [
               {
-                // Use replica-specific variables, or fall back to the primary ones.
                 host: configService.get<string>('DB_REPLICA_HOST', dbHost),
                 port: configService.get<number>('DB_REPLICA_PORT', dbPort),
                 username: configService.get<string>(
@@ -81,15 +85,11 @@ import { cacheConfig } from './config/cache.config';
           },
 
           entities: [__dirname + '/**/*.entity{.ts,.js}'],
-          synchronize: false, 
+          synchronize: false,
 
-          // --- Query Performance Logging ---
-          // Log all queries and errors
-          logging: ['query', 'error'], 
-           // Log queries that take longer than 250ms
+          logging: ['query', 'error'],
           maxQueryExecutionTime: 250,
 
-          // --- Connection Pooling Configuration ---
           extra: {
             poolSize: 10,
           },
@@ -99,7 +99,14 @@ import { cacheConfig } from './config/cache.config';
     UsersModule,
     AuthModule,
     GameSessionsModule,
-  LyricsModule,
+    LyricsModule,
+    CommonModule,
+    RoomsModule,
+    AdminModule,
+    GameModule,
+    TokensModule,
+    GameHistoryModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [
@@ -108,4 +115,4 @@ import { cacheConfig } from './config/cache.config';
     { provide: 'APP_GUARD', useClass: RolesGuard },
   ],
 })
-export class AppModule {}
+export class AppModule { }

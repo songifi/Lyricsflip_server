@@ -1,10 +1,11 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class CreateGameSessionsTable1691675432000 implements MigrationInterface {
-  name = 'CreateGameSessionsTable1691675432000';
+export class CreateGameSessionsTable1754625844000
+  implements MigrationInterface
+{
+  name = 'CreateGameSessionsTable1754625844000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
-    // Create GameCategory enum type
     await queryRunner.query(`
       CREATE TYPE "public"."game_category_enum" AS ENUM (
         'Afrobeats',
@@ -15,7 +16,6 @@ export class CreateGameSessionsTable1691675432000 implements MigrationInterface 
       )
     `);
 
-    // Create GameSessionStatus enum type
     await queryRunner.query(`
       CREATE TYPE "public"."game_session_status_enum" AS ENUM (
         'in_progress',
@@ -24,7 +24,6 @@ export class CreateGameSessionsTable1691675432000 implements MigrationInterface 
       )
     `);
 
-    // Create game_sessions table
     await queryRunner.query(`
       CREATE TABLE "game_sessions" (
         "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
@@ -38,7 +37,6 @@ export class CreateGameSessionsTable1691675432000 implements MigrationInterface 
       )
     `);
 
-    // Add foreign key constraint
     await queryRunner.query(`
       ALTER TABLE "game_sessions"
       ADD CONSTRAINT "FK_player_game_session"
@@ -50,15 +48,12 @@ export class CreateGameSessionsTable1691675432000 implements MigrationInterface 
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    // Drop foreign key constraint
     await queryRunner.query(`
       ALTER TABLE "game_sessions" DROP CONSTRAINT "FK_player_game_session"
     `);
 
-    // Drop game_sessions table
     await queryRunner.query(`DROP TABLE "game_sessions"`);
 
-    // Drop enum types
     await queryRunner.query(`DROP TYPE "public"."game_session_status_enum"`);
     await queryRunner.query(`DROP TYPE "public"."game_category_enum"`);
   }
