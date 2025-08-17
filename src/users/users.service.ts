@@ -2,8 +2,6 @@ import { Injectable, BadRequestException, Inject } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import { Cache } from 'cache-manager';
 
@@ -15,9 +13,6 @@ export class UsersService {
     @Inject(CACHE_MANAGER)
     private cacheManager: Cache,
   ) {}
-  create(createUserDto: CreateUserDto) {
-    return 'This action adds a new user';
-  }
 
   findAll() {
     return this.userRepository.find();
@@ -25,10 +20,6 @@ export class UsersService {
 
   findOne(id: string) {
     return this.userRepository.findOne({ where: { id } });
-  }
-
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
   }
 
   async remove(id: string) {
