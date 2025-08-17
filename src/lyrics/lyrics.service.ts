@@ -54,7 +54,6 @@ export class LyricsService {
       // If not in cache, fetch from database
       const dbLyrics = await this.lyricsRepository.findOne({ where: { id } });
       if (!dbLyrics) throw new NotFoundException('Lyrics not found');
-
       lyrics = dbLyrics;
       // Cache the result
       await this.cacheManager.set(cacheKey, lyrics, cacheConfig.lyricsTTL);

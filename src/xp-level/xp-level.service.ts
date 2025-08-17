@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { UserLevel } from 'src/users/entities/user.entity';
+import { UserLevel } from '../users/entities/user.entity';
 
 @Injectable()
 export class XpLevelService {
