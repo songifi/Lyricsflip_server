@@ -7,61 +7,55 @@ import {
   UpdateDateColumn,
   Index,
   Unique,
-} from 'typeorm';
-import { User } from '../../users/entities/user.entity';
-
-export enum Genre {
-  Afrobeats = 'Afrobeats',
-  HipHop = 'Hip-Hop',
-  Pop = 'Pop',
-  Other = 'Other',
-}
+} from "typeorm"
+import { User } from "../../users/entities/user.entity"
+import { Genre } from "./genre.enum"
 
 @Entity()
-@Unique(['artist', 'songTitle']) // Combination uniqueness
+@Unique(["artist", "songTitle"]) // Combination uniqueness
 export class Lyrics {
   @PrimaryGeneratedColumn()
-  id: number;
+  id: number
 
-  @Column('text')
-  content: string;
+  @Column("text")
+  content: string
 
   @Column()
-  artist: string;
+  artist: string
 
-  @Column('text')
-  lyricSnippet: string;
+  @Column("text")
+  lyricSnippet: string
 
   @Column({ length: 200 })
-  songTitle: string;
+  songTitle: string
 
   @Column({ length: 50, nullable: true })
   @Index()
-  category: string;
+  category: string
 
-  @Column({ type: 'enum', enum: Genre, default: Genre.Other })
+  @Column({ type: "enum", enum: Genre, default: Genre.Other })
   @Index()
-  genre: Genre;
+  genre: Genre
 
-  @Column({ type: 'varchar', length: 10 })
+  @Column({ type: "varchar", length: 10 })
   @Index()
-  decade: string;
+  decade: string
 
-  @Column({ type: 'int', default: 0 })
-  difficulty: number; // 1-5 scale
+  @Column({ type: "int", default: 0 })
+  difficulty: number // 1-5 scale
 
-  @Column({ type: 'boolean', default: true })
-  isActive: boolean;
+  @Column({ type: "boolean", default: true })
+  isActive: boolean
 
-  @Column({ type: 'int', default: 0 })
-  timesUsed: number;
+  @Column({ type: "int", default: 0 })
+  timesUsed: number
 
-  @ManyToOne(() => User, { eager: true, nullable: false, onDelete: 'CASCADE' })
-  createdBy: User;
+  @ManyToOne(() => User, { eager: true, nullable: false, onDelete: "CASCADE" })
+  createdBy: User
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt: Date
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt: Date
 }
