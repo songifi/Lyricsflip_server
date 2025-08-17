@@ -8,7 +8,7 @@ export class XpLevelService {
     { min: 100, max: 299, level: UserLevel.WORD_WHISPERER },
     { min: 300, max: 599, level: UserLevel.LYRIC_SNIPER },
     { min: 600, max: 999, level: UserLevel.BAR_GENIUS },
-    { min: 1000, max: Infinity, level: UserLevel.GOSSIP_GOD },
+    { min: 1000, max: Infinity, level: UserLevel.GOSSIP_GURU },
   ];
 
   getLevelFromXp(xp: number): UserLevel {
