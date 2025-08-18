@@ -185,7 +185,7 @@ async function bootstrap() {
         songTitle: lyric.songTitle,
         artist: lyric.artist,
         genre: lyric.genre,
-        decade: lyric.decade,
+        decade: String(lyric.decade),
         createdBy: { id: admin.id },
         createdAt: new Date(),
       });

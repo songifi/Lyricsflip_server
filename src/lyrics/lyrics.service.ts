@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { Injectable, NotFoundException } from "@nestjs/common"
 import type { Repository } from "typeorm"
 import type { Cache } from "cache-manager"
@@ -66,8 +68,9 @@ export class LyricsService {
     return results
   }
 
-  async findOne(id: string): Promise<Lyrics> {
+  async findOne(id: number): Promise<Lyrics> {
     // Try to get from cache first
+
     const cacheKey = `${cacheConfig.keys.lyrics}${id}`
     let lyrics = await this.cacheManager.get<Lyrics>(cacheKey)
 

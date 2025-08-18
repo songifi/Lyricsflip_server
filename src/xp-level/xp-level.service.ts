@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { UserLevel } from '../users/entities/user.entity'
+import { UserLevel } from '../users/entities/user.entity';
 
 @Injectable()
 export class XpLevelService {
@@ -12,9 +12,11 @@ export class XpLevelService {
   ];
 
   getLevelFromXp(xp: number): UserLevel {
-    return this.LEVEL_THRESHOLDS.find(
-      (threshold) => xp >= threshold.min && xp <= threshold.max,
-    )?.level || UserLevel.GOSSIP_ROOKIE;
+    return (
+      this.LEVEL_THRESHOLDS.find(
+        (threshold) => xp >= threshold.min && xp <= threshold.max,
+      )?.level || UserLevel.GOSSIP_ROOKIE
+    );
   }
 
   calculateXpGain(currentXp: number, correctGuesses = 1, xpPerGuess = 10) {

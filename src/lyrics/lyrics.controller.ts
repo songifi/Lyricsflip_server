@@ -1,3 +1,4 @@
+
 import { Controller, Get, Post, Patch, Param, Delete, UseGuards, Query } from "@nestjs/common"
 import type { LyricsService } from "./lyrics.service"
 import type { CreateLyricsDto } from "./dto/create-lyrics.dto"
@@ -101,7 +102,7 @@ export class LyricsController {
 
   @ApiOperation({ summary: 'Get lyrics by ID' })
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id') id: number) {
     return this.lyricsService.findOne(id);
   }
 
@@ -121,7 +122,7 @@ export class LyricsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin)
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  remove(@Param('id') id: number) {
     return this.lyricsService.remove(id);
   }
 

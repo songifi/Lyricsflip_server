@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  ConflictException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Room } from './entities/room.entity';
@@ -21,10 +26,10 @@ export class RoomsService {
 
   async create(createRoomDto: CreateRoomDto) {
     let lyric: Lyrics;
-    
+
     if (createRoomDto.lyricId) {
-      const foundLyric = await this.lyricsRepository.findOne({ 
-        where: { id: createRoomDto.lyricId }
+      const foundLyric = await this.lyricsRepository.findOne({
+        where: { id: Number(createRoomDto.lyricId) },
       });
       if (!foundLyric) {
         throw new NotFoundException('Lyric not found');
@@ -36,7 +41,6 @@ export class RoomsService {
         .createQueryBuilder('lyrics')
         .orderBy('RANDOM()')
         .getOne();
-      
       if (!foundLyric) {
         throw new NotFoundException('No lyrics available');
       }
@@ -46,7 +50,7 @@ export class RoomsService {
     const room = this.roomRepository.create({
       name: createRoomDto.name,
       lyric,
-      lyricId: parseInt(lyric.id),
+      lyricId: lyric.id,
       expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours from now
     } as Room);
 
@@ -54,9 +58,9 @@ export class RoomsService {
   }
 
   async join(roomId: string, userId: string) {
-    const room = await this.roomRepository.findOne({ 
+    const room = await this.roomRepository.findOne({
       where: { id: roomId },
-      relations: ['roomUsers']
+      relations: ['roomUsers'],
     });
 
     if (!room) {
@@ -69,7 +73,7 @@ export class RoomsService {
 
     // Check if user already joined
     const existingRoomUser = await this.roomUserRepository.findOne({
-      where: { roomId, userId }
+      where: { roomId, userId },
     });
 
     if (existingRoomUser) {
@@ -95,7 +99,7 @@ export class RoomsService {
     }
 
     // Check if user has joined the room
-    const roomUser = room.roomUsers.find(ru => ru.userId === userId);
+    const roomUser = room.roomUsers.find((ru) => ru.userId === userId);
     if (!roomUser) {
       throw new NotFoundException('User has not joined this room');
     }
@@ -131,7 +135,7 @@ export class RoomsService {
     // Calculate score based on string similarity
     const similarity = stringSimilarity.compareTwoStrings(
       guessDto.guess.toLowerCase(),
-      roomUser.room.lyric.content.toLowerCase()
+      roomUser.room.lyric.content.toLowerCase(),
     );
 
     roomUser.hasGuessed = true;

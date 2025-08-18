@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { LyricsService } from 'src/lyrics/lyrics.service';
 
@@ -13,19 +13,16 @@ export class AdminService {
     return this.usersService.findAll();
   }
 
-  async deleteUser(id: string) {
+  async deleteUser(id: number) {
     const result = await this.usersService.remove(id);
-    if (result.affected === 0) {
-      throw new NotFoundException(`User with ID "${id}" not found`);
-    }
-    return { message: `User with ID ${id} deleted successfully.` };
+    return result.message || 'User deleted successfully';
   }
 
   findAllLyrics() {
     return this.lyricsService.findAll();
   }
 
-  deleteLyric(id: string) {
+  deleteLyric(id: number) {
     return this.lyricsService.remove(id);
   }
 }

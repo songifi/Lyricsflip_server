@@ -21,19 +21,16 @@ export class LoggingInterceptor implements NestInterceptor {
     const startTime = Date.now();
 
     // Log incoming request
-    this.logger.log(
-      `Incoming Request: ${method} ${url}`,
-      {
-        method,
-        url,
-        body: this.sanitizeBody(body),
-        query,
-        params,
-        ip,
-        userAgent,
-        timestamp: new Date().toISOString(),
-      },
-    );
+    this.logger.log(`Incoming Request: ${method} ${url}`, {
+      method,
+      url,
+      body: this.sanitizeBody(body),
+      query,
+      params,
+      ip,
+      userAgent,
+      timestamp: new Date().toISOString(),
+    });
 
     return next.handle().pipe(
       tap({
@@ -80,10 +77,16 @@ export class LoggingInterceptor implements NestInterceptor {
   private sanitizeBody(body: any): any {
     if (!body) return body;
 
-    const sensitiveFields = ['password', 'token', 'secret', 'key', 'authorization'];
+    const sensitiveFields = [
+      'password',
+      'token',
+      'secret',
+      'key',
+      'authorization',
+    ];
     const sanitized = { ...body };
 
-    sensitiveFields.forEach(field => {
+    sensitiveFields.forEach((field) => {
       if (sanitized[field]) {
         sanitized[field] = '***REDACTED***';
       }

@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { User } from '../users/entities/user.entity';
 import { XpLevelService } from '../xp-level/xp-level.service';
+import { User } from 'src/users/entities/user.entity';
 
 @Injectable()
 export class GameLogicService {
@@ -18,7 +18,7 @@ export class GameLogicService {
 
     const { xp, level } = this.xpLevelService.calculateXpGain(user.xp, 1);
     user.xp = xp;
-    user.level = level;
+    user.level = level as unknown as number;
 
     await this.userRepo.save(user);
     return { xp, level };

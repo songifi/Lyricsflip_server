@@ -12,10 +12,11 @@ import { cacheConfig } from '../config/cache.config';
     CacheModule.register({
       ttl: cacheConfig.lyricsTTL,
       // Use half of global max for lyrics-specific cache
-      max: Math.floor(cacheConfig.maxItems / 2), 
+      max: Math.floor(cacheConfig.maxItems / 2),
     }),
   ],
   providers: [LyricsService],
   controllers: [LyricsController],
+  exports: [LyricsService],
 })
 export class LyricsModule {}
