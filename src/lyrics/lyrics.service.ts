@@ -1,4 +1,6 @@
-import { Injectable, NotFoundException, ForbiddenException, Inject } from '@nestjs/common';
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+import { Injectable, NotFoundException, Inject } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
@@ -18,60 +20,74 @@ export class LyricsService {
   ) {}
 
   async create(createLyricsDto: CreateLyricsDto, user: User): Promise<Lyrics> {
-    const lyrics = this.lyricsRepository.create({ ...createLyricsDto, createdBy: user });
-    const savedLyrics = await this.lyricsRepository.save(lyrics);
-    
+    const lyrics = this.lyricsRepository.create({
+      ...createLyricsDto,
+      decade: String(createLyricsDto.decade),
+      // Assign createdBy only if Lyrics entity has this property
+      ...(Object.prototype.hasOwnProperty.call(
+        this.lyricsRepository.metadata.propertiesMap,
+        'createdBy',
+      ) && { createdBy: user }),
+    });
+    const savedLyricsArray = await this.lyricsRepository.save(lyrics);
+
     // Clear relevant caches when new lyrics are added
     await this.clearCache();
-    
-    return savedLyrics;
+
+    // save() returns the entity or array depending on input; ensure we return a single Lyrics
+    return Array.isArray(savedLyricsArray)
+      ? savedLyricsArray[0]
+      : savedLyricsArray;
   }
 
-  findAll(filter?: any): Promise<Lyrics[]> {
+  findAll(): Promise<Lyrics[]> {
     // Add filtering/pagination logic here if needed
-    return this.lyricsRepository.find({ where: filter });
+    return this.lyricsRepository.find();
   }
 
-  async findOne(id: string): Promise<Lyrics> {
+  async findOne(id: number): Promise<Lyrics> {
     // Try to get from cache first
     const cacheKey = `${cacheConfig.keys.lyrics}${id}`;
-    let lyrics = await this.cacheManager.get<Lyrics>(cacheKey);
-    
+    let lyrics = await (this.cacheManager as Cache).get<Lyrics>(cacheKey);
+
     if (!lyrics) {
       // If not in cache, fetch from database
       const dbLyrics = await this.lyricsRepository.findOne({ where: { id } });
       if (!dbLyrics) throw new NotFoundException('Lyrics not found');
-      
       lyrics = dbLyrics;
       // Cache the result
       await this.cacheManager.set(cacheKey, lyrics, cacheConfig.lyricsTTL);
     }
-    
+
     return lyrics;
   }
 
-  async update(id: string, updateLyricsDto: UpdateLyricsDto, user: User): Promise<Lyrics> {
+  async update(
+    id: number,
+    updateLyricsDto: UpdateLyricsDto,
+    user: User,
+  ): Promise<Lyrics> {
     const lyrics = await this.lyricsRepository.findOne({ where: { id } });
     if (!lyrics) throw new NotFoundException('Lyrics not found');
-    
+
     // Optionally check if user is admin or creator
     Object.assign(lyrics, updateLyricsDto);
     const updatedLyrics = await this.lyricsRepository.save(lyrics);
-    
+
     // Update cache and clear related caches
     const cacheKey = `${cacheConfig.keys.lyrics}${id}`;
     await this.cacheManager.set(cacheKey, updatedLyrics, cacheConfig.lyricsTTL);
     await this.clearCache();
-    
+
     return updatedLyrics;
   }
 
-  async remove(id: string): Promise<void> {
+  async remove(id: number): Promise<void> {
     const lyrics = await this.lyricsRepository.findOne({ where: { id } });
     if (!lyrics) throw new NotFoundException('Lyrics not found');
-    
+
     await this.lyricsRepository.remove(lyrics);
-    
+
     // Remove from cache and clear related caches
     const cacheKey = `${cacheConfig.keys.lyrics}${id}`;
     await this.cacheManager.del(cacheKey);
@@ -85,21 +101,25 @@ export class LyricsService {
    * @param decade Optional decade filter
    * @returns Promise<Lyrics[]>
    */
-  async getRandomLyrics(count: number = 1, genre?: string, decade?: number): Promise<Lyrics[]> {
+  async getRandomLyrics(
+    count: number = 1,
+    genre?: string,
+    decade?: number,
+  ): Promise<Lyrics[]> {
     // Create cache key based on parameters
     const cacheKey = `${cacheConfig.keys.randomLyrics}${count}:${genre || 'all'}:${decade || 'all'}`;
-    
+
     // Try to get from cache first
     let lyrics = await this.cacheManager.get<Lyrics[]>(cacheKey);
-    
+
     if (!lyrics) {
       // If not in cache, fetch from database
       lyrics = await this.fetchRandomLyricsFromDB(count, genre, decade);
-      
+
       // Cache the result
       await this.cacheManager.set(cacheKey, lyrics, cacheConfig.lyricsTTL);
     }
-    
+
     return lyrics;
   }
 
@@ -110,31 +130,34 @@ export class LyricsService {
    * @param decade Optional decade filter
    * @returns Promise<Lyrics[]>
    */
-  private async fetchRandomLyricsFromDB(count: number, genre?: string, decade?: number): Promise<Lyrics[]> {
+  private async fetchRandomLyricsFromDB(
+    count: number,
+    genre?: string,
+    decade?: number,
+  ): Promise<Lyrics[]> {
     let query = this.lyricsRepository.createQueryBuilder('lyrics');
-    
+
     if (genre) {
       query = query.where('lyrics.genre = :genre', { genre });
     }
-    
+
     if (decade) {
       query = query.andWhere('lyrics.decade = :decade', { decade });
     }
-    
+
     // Get total count for random selection
     const totalCount = await query.getCount();
-    
+
     if (totalCount === 0) {
       return [];
     }
-    
+
     // Generate random offset
-    const randomOffset = Math.floor(Math.random() * Math.max(1, totalCount - count));
-    
-    return await query
-      .orderBy('RANDOM()')
-      .limit(count)
-      .getMany();
+    const randomOffset = Math.floor(
+      Math.random() * Math.max(1, totalCount - count),
+    );
+
+    return await query.orderBy('RANDOM()').limit(count).getMany();
   }
 
   /**
@@ -143,21 +166,24 @@ export class LyricsService {
    * @param value Category value
    * @returns Promise<Lyrics[]>
    */
-  async getLyricsByCategory(category: 'genre' | 'decade' | 'artist', value: string | number): Promise<Lyrics[]> {
+  async getLyricsByCategory(
+    category: 'genre' | 'decade' | 'artist',
+    value: string | number,
+  ): Promise<Lyrics[]> {
     const cacheKey = `${cacheConfig.keys.lyricsByCategory}${category}:${value}`;
-    
+
     // Try to get from cache first
     let lyrics = await this.cacheManager.get<Lyrics[]>(cacheKey);
-    
+
     if (!lyrics) {
       // If not in cache, fetch from database
       const whereClause = { [category]: value };
       lyrics = await this.lyricsRepository.find({ where: whereClause });
-      
+
       // Cache the result
       await this.cacheManager.set(cacheKey, lyrics, cacheConfig.lyricsTTL);
     }
-    
+
     return lyrics;
   }
 
@@ -185,7 +211,7 @@ export class LyricsService {
     // For in-memory cache, we'll return basic stats
     // In production with Redis, you could get actual key counts
     return {
-      keys: 0, 
+      keys: 0,
       ttl: cacheConfig.lyricsTTL,
     };
   }

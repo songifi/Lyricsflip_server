@@ -15,6 +15,10 @@ import { CreateLyricsDto } from './dto/create-lyrics.dto';
 import { UpdateLyricsDto } from './dto/update-lyrics.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
+import { User } from '../users/entities/user.entity';
+import { Roles } from 'src/auth/decorators/roles.decorator';
+import { Role } from 'src/auth/roles/role.enum';
+import { GetUser } from 'src/auth/decorators/user.decorator';
 import {
   ApiTags,
   ApiBearerAuth,
@@ -22,10 +26,6 @@ import {
   ApiResponse,
   ApiQuery,
 } from '@nestjs/swagger';
-import { User } from '../users/entities/user.entity';
-import { Roles } from 'src/auth/decorators/roles.decorator';
-import { Role } from 'src/auth/roles/role.enum';
-import { GetUser } from 'src/auth/decorators/user.decorator';
 
 @ApiTags('lyrics')
 @Controller('lyrics')
@@ -48,8 +48,8 @@ export class LyricsController {
   @ApiQuery({ name: 'decade', required: false })
   @ApiResponse({ status: 200, description: 'List of lyrics.' })
   @Get()
-  findAll(@Query() query: any) {
-    return this.lyricsService.findAll(query);
+  findAll() {
+    return this.lyricsService.findAll();
   }
 
   @ApiOperation({ summary: 'Get random lyrics' })
@@ -111,7 +111,7 @@ export class LyricsController {
 
   @ApiOperation({ summary: 'Get lyrics by ID' })
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id') id: number) {
     return this.lyricsService.findOne(id);
   }
 
@@ -122,7 +122,7 @@ export class LyricsController {
   @Roles(Role.Admin)
   @Patch(':id')
   update(
-    @Param('id') id: string,
+    @Param('id') id: number,
     @Body() updateLyricsDto: UpdateLyricsDto,
     @GetUser() user: User,
   ) {
@@ -135,7 +135,7 @@ export class LyricsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin)
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  remove(@Param('id') id: number) {
     return this.lyricsService.remove(id);
   }
 

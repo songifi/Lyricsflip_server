@@ -25,7 +25,7 @@ export class AdminController {
   }
 
   @Delete('users/:id')
-  deleteUser(@Param('id', ParseUUIDPipe) id: string) {
+  deleteUser(@Param('id', ParseUUIDPipe) id: number) {
     return this.adminService.deleteUser(id);
   }
 
@@ -36,7 +36,7 @@ export class AdminController {
   }
 
   @Delete('lyrics/:id')
-  deleteLyric(@Param('id', ParseUUIDPipe) id: string) {
+  deleteLyric(@Param('id', ParseUUIDPipe) id: number) {
     return this.adminService.deleteLyric(id);
   }
 }

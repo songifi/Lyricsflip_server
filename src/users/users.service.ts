@@ -1,4 +1,9 @@
-import { Injectable, BadRequestException, Inject, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  Inject,
+  NotFoundException,
+} from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -19,7 +24,9 @@ export class UsersService {
 
   async create(createUserDto: CreateUserDto) {
     // This method should be implemented based on your auth service requirements
-    throw new BadRequestException('User creation should be handled through auth service');
+    throw new BadRequestException(
+      'User creation should be handled through auth service',
+    );
   }
 
   async findAll() {
@@ -27,7 +34,9 @@ export class UsersService {
   }
 
   async findOne(id: number) {
-    const user = await this.userRepository.findOne({ where: { id: String(id) } });
+    const user = await this.userRepository.findOne({
+      where: { id: String(id) },
+    });
     if (!user) {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
@@ -52,7 +61,10 @@ export class UsersService {
    * @param preferencesDto The preferences to update
    * @returns Updated user with preferences
    */
-  async updatePreferences(userId: string, preferencesDto: UpdateUserPreferencesDto): Promise<User> {
+  async updatePreferences(
+    userId: string,
+    preferencesDto: UpdateUserPreferencesDto,
+  ): Promise<User> {
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {
       throw new NotFoundException(`User with ID ${userId} not found`);
@@ -77,12 +89,14 @@ export class UsersService {
    * @param userId The ID of the user
    * @returns User preferences
    */
-  async getUserPreferences(userId: string): Promise<{ preferredGenre?: string; preferredDecade?: string }> {
-    const user = await this.userRepository.findOne({ 
+  async getUserPreferences(
+    userId: string,
+  ): Promise<{ preferredGenre?: string; preferredDecade?: string }> {
+    const user = await this.userRepository.findOne({
       where: { id: userId },
-      select: ['preferredGenre', 'preferredDecade']
+      select: ['preferredGenre', 'preferredDecade'],
     });
-    
+
     if (!user) {
       throw new NotFoundException(`User with ID ${userId} not found`);
     }
@@ -100,11 +114,19 @@ export class UsersService {
    * @param sort sort field (xp, level, username)
    * @param order sort order (ASC, DESC)
    */
-  async getLeaderboard(limit = 10, offset = 0, sort = 'xp', order: 'ASC' | 'DESC' = 'DESC') {
-    if (limit < 1 || offset < 0) throw new BadRequestException('Invalid limit or offset');
+  async getLeaderboard(
+    limit = 10,
+    offset = 0,
+    sort = 'xp',
+    order: 'ASC' | 'DESC' = 'DESC',
+  ) {
+    if (limit < 1 || offset < 0)
+      throw new BadRequestException('Invalid limit or offset');
     const validSorts = ['xp', 'level', 'username'];
-    if (!validSorts.includes(sort)) throw new BadRequestException('Invalid sort field');
-    if (!['ASC', 'DESC'].includes(order)) throw new BadRequestException('Invalid order');
+    if (!validSorts.includes(sort))
+      throw new BadRequestException('Invalid sort field');
+    if (!['ASC', 'DESC'].includes(order))
+      throw new BadRequestException('Invalid order');
 
     const cacheKey = `leaderboard:${sort}:${order}:${limit}:${offset}`;
     const cached = await this.cacheManager.get<any>(cacheKey);
